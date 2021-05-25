@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="GetAllFlow" doc:id="1b6c34c6-57dc-4027-9da3-da960ff06d6b" >
+		<db:select doc:name="Query from DB" doc:id="dff78c01-5f48-4669-a03a-6bf53d054e0e" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from Products]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Defining metadata" doc:id="1e3f8d48-fccf-4f51-ad91-5457a0aac473" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	productCode: payload01.productCode,
+	productName: payload01.productName default "",
+	productVendor: payload01.productVendor default "",
+	productDesc: payload01.productDescription as String default "",
+	quantity: payload01.quantityInStock default 0,
+	buyPrice: payload01.buyPrice default 0
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="getbyIDFlow" doc:id="f35ff10f-aeec-454c-8b3c-4cb23fb69453" >
+		<db:query-single doc:name="Query from DB" doc:id="17969428-2419-4b96-98b4-df9ce7adc117" config-ref="Database_Config">
+			<error-mapping sourceType="DB:BAD_SQL_SYNTAX" targetType="DB1:BAD_SQL_SYNTAX" />
+			<db:sql ><![CDATA[select * from Products where productCode= :productCode]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'productCode': vars.ID
+}]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Choice" doc:id="29d3924f-f709-410f-8162-5987374c1757" >
+			<when expression="#[sizeOf(payload)&gt;0]">
+				<ee:transform doc:name="Defining metadata" doc:id="a9d53d7b-63c5-49dc-b559-2073727db613">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	productCode: payload.productCode,
+	productName: payload.productName default "",
+	productVendor: payload.productVendor default "",
+	productDesc: payload.productDescription default "",
+	quantity: payload.quantityInStock default 0,
+	buyPrice: payload.buyPrice default 0
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<set-payload value='#["Check the Get by ID flow"]' doc:name="Set Payload" doc:id="4ceeb750-88d1-478c-a677-3ae4864354a4" />
+				<set-variable value="500" doc:name="httpStatus" doc:id="70962623-b409-4c5d-8b1e-50bd245e978f" variableName="httpStatus"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="DeleteFlow" doc:id="2d4ffbfc-5697-4794-b173-afd46492fd8c" >
+		<db:delete doc:name="Delete product details by id" doc:id="514ed233-5309-4e9c-aa2e-d3507a2e51be" config-ref="Database_Config">
+			<db:sql ><![CDATA[delete from Products where productCode= :productCode]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"productCode": vars.ID
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="converting into json" doc:id="8ccb4a0f-7d9d-4b5f-bb4b-03e17403c160">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Product details deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<sub-flow name="Variable_Sub_Flow" doc:id="fe96c861-11bd-4276-a965-425472a73578" >
+		<set-variable value="#[payload.productName]" doc:name="productName" doc:id="304c4079-100f-421d-ab2b-bee3f6636346" variableName="productName"/>
+		<set-variable value="#[payload.productVendor]" doc:name="productVendor" doc:id="5993e529-377b-4039-aa2e-7ed1c53e6f24" variableName="productVendor"/>
+		<set-variable value="#[payload.productDesc]" doc:name="productDesc" doc:id="c84c74be-914f-45e4-98d6-d09a1f215382" variableName="productDesc"/>
+		<set-variable value="#[payload.quantity]" doc:name="quantity" doc:id="2ca3f143-a15f-4c68-8ef4-5ffbcfc83a85" variableName="quantity"/>
+		<set-variable value="#[payload.buyPrice]" doc:name="buyPrice" doc:id="dce493c9-5d07-4431-a716-2ae8c0f31896" variableName="buyPrice"/>
+	</sub-flow>
+	<flow name="PostFlow" doc:id="e97e71c3-3c49-43e5-8699-fe4621ee43d8" initialState="started">
+		<flow-ref doc:name="connecting to Variable_Sub_Flow" doc:id="d55ab881-7190-4eb1-8fab-3f289743ffd6" name="Variable_Sub_Flow"/>
+		<db:query-single doc:name="Query from DB" doc:id="352e7cde-eae4-4184-be43-03e966cc816c" config-ref="Database_Config">
+			<db:sql ><![CDATA[select max(productCode) from Products]]></db:sql>
+		</db:query-single>
+		<ee:transform doc:name="auto incrementing" doc:id="da1ca628-ae9e-4ee5-bf5c-1b3eaed08626" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	productCode: "P" ++ ((payload."max(productCode)"[1 to 3] as Number) +1)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:insert doc:name="Insert from DB" doc:id="038fd490-3e71-4503-b720-0761ea0c3b98" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into Products (productCode, productName, productVendor, productDescription, quantityInStock, buyPrice) values(:productCode, :productName, :productVendor, :productDescription, :quantityInStock, :buyPrice)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"productCode": payload.productCode,
+	"productName": vars.productName,
+	"productVendor": vars.productVendor,
+	"productDescription": vars.productDesc,
+	"quantityInStock": vars.quantity,
+	"buyPrice": vars.buyPrice
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="converting into json" doc:id="d262a4e9-6f83-4855-b3d0-797fb9831389" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	'message': "Product Details added"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="201" doc:name="httpStatus" doc:id="17050c6e-49ee-4947-a4f7-d817ecaf64ce" variableName="httpStatus"/>
+	</flow>
+	<flow name="PatchFlow" doc:id="ff2ccfba-4b4e-4577-a07e-a1095b8c45f1" initialState="started">
+		<flow-ref doc:name="connecting to Variable_Sub_FLow" doc:id="658c58b0-db3f-408b-aaa9-eaf0b53058f3" name="Variable_Sub_Flow"/>
+		<db:update doc:name="Update product details in DB" doc:id="aa9c1da9-382a-486e-b2cb-3077e64ea066" config-ref="Database_Config">
+			<db:sql ><![CDATA[update Products set quantityInStock= :quantityInStock, buyPrice= :buyPrice where productCode= :productCode]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'productCode': vars.ID,
+	'quantityInStock': vars.quantity,
+	'buyPrice': vars.buyPrice
+	
+}]]]></db:input-parameters>
+		</db:update>
+		<choice doc:name="Choice" doc:id="dcd57fe5-9d0f-40e1-83c8-78e5addb034f" >
+			<when expression="#[payload.affectedRows !=0]">
+				<ee:transform doc:name="converting into json" doc:id="b10b8caf-7f81-4aac-afcf-4ee6dd3c72a1">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Product details modified"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<set-payload value='#["Error, Check the Patch flow"]' doc:name="Set Payload" doc:id="0c0cbff1-d5e9-469d-9aba-6cda50adb8a4" />
+				<set-variable value="500" doc:name="httpStatus" doc:id="6a6ba313-16c3-4a8d-966c-a8e56db0ee94" variableName="httpStatus"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="PutFlow" doc:id="c4d027c1-3a4b-4740-92fc-eef155ce18ea" initialState="started">
+		<flow-ref doc:name="connecting to variable_sub_flow" doc:id="8ac61a5a-cf12-4eb0-a2ac-649cbe12b548" name="Variable_Sub_Flow"/>
+		<db:query-single doc:name="Query from DB" doc:id="04390e71-e1d4-4556-b285-13b2ae17877d" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from Products where productCode= :productCode]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'productCode': vars.ID
+}]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Choice" doc:id="a2b01e78-93ed-4c20-864e-2fafbd61a4e1" >
+			<when expression="#[sizeOf(payload)!=0]">
+				<db:update doc:name="Update" doc:id="a1efc3f9-b905-435d-aeb7-abd1c9aff18b" config-ref="Database_Config">
+					<db:sql ><![CDATA[update Products set productName= :productName,productVendor= :productVendor,productDescription= :productDescription, quantityInStock= :quantityInStock, buyPrice= :buyPrice where productCode= :productCode]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	"productCode": vars.ID,
+	"productName": vars.productName,
+	"productVendor": vars.productVendor,
+	"productDescription": vars.productDesc,
+	"quantityInStock": vars.quantity,
+	"buyPrice": vars.buyPrice
+}]]]></db:input-parameters>
+				</db:update>
+			</when>
+			<otherwise >
+				<db:insert doc:name="Insert" doc:id="a5411221-0490-4d07-954f-619de2a22d6e" config-ref="Database_Config">
+					<db:sql ><![CDATA[insert into Products(productName, productVendor, productDescription, quantityInStock, buyPrice) values(:productName, :productVendor, :productDescription, :quantityInStock, :buyPrice)]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	"productName": vars.productName,
+	"productVendor": vars.productVendor,
+	"productDescription": vars.productDescr,
+	"quantityInStock": vars.quantity,
+	"buyPrice": vars.buyPrice
+}]]]></db:input-parameters>
+				</db:insert>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="converting into json" doc:id="911ff2b9-e958-4e30-a98d-ea283558e370" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Product details has been updated"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="201" doc:name="httpStatus" doc:id="31fcc14e-e61f-433a-a913-fb3368f20ff9" variableName="httpStatus"/>
+	</flow>
+</mule>

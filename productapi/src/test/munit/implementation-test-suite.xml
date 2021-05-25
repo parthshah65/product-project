@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="implementation-test-suite.xml" />
+	<munit:test name="implementation-test-suite-GetAllFlowTest" doc:id="75d1f7cf-0e75-45af-bcc7-90836830ae70" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="d4adbf8c-f06f-4169-9d25-2b81eace487b" />
+			<flow-ref doc:name="Flow-ref to GetAllFlow" doc:id="3b900292-5720-4368-bd63-d0ce3860951b" name="GetAllFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="751a0b64-341f-41c4-b7b8-873af8a96735" is="#[MunitTools::notNullValue()]" message='"Error, check the get flow"' expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-getbyIDFlowTest" doc:id="ddc3b985-17b6-49a7-a60e-b4fe5ac5db69" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="300b0ac0-ac46-49a8-a7ac-084777e15aa7" />
+			<flow-ref doc:name="Flow-ref to getbyIDFlow" doc:id="2eb4ee46-a79d-402b-92cd-bea9d30de4ce" name="getbyIDFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="c59e0605-8017-4852-b253-f7339f7e600b" message='"Error, check the get by Id"' expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-DeleteFlowTest" doc:id="6d5d701b-1da8-4dc6-9010-4b66c8b9ad66" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="bbec30b6-66cf-4d07-a5f7-fa75f54b68ec" processor="db:delete">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Delete product details by id" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="514ed233-5309-4e9c-aa2e-d3507a2e51be" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Database_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="dc0c1862-c569-4fa8-a15b-936d97031197" />
+			<flow-ref doc:name="Flow-ref to DeleteFlow" doc:id="f6e82b7d-a05a-4721-9ecb-f938a9083367" name="DeleteFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="029a75a5-d024-4c88-8b7a-ed4cf3f6ac09" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-PutFlowTest" doc:id="f046c288-ebf9-43ab-91dd-b5c780b1c4d4" description="Test">
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="d52edc42-70b3-4d71-8580-ecbbb2962876" processor="db:query-single">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Query from DB" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="04390e71-e1d4-4556-b285-13b2ae17877d" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Database_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Copy_of_Set Event" doc:id="0b09f299-af4b-4ddf-9187-c39d8cfffe7a">
+				<munit:payload value='{&#10;"productName": "perk",&#10;"productVendor": "RelianceMarket",&#10;"productDesc": "Chocolate",&#10;"quantity": 20,&#10;"buyPrice": 10&#10;}&#10;' mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to PutFlow" doc:id="84cc1148-9807-45eb-9ead-df6269b0a53d" name="PutFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="13ea04e4-1308-468a-af58-570b451799e7" message='"error, check the put method"' expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-PostFlowTest" doc:id="508f1f7a-d171-425c-8388-7c0198057050" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="f1f45fd1-3fb7-4147-89ac-4af914567b1f" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Insert from DB" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="038fd490-3e71-4503-b720-0761ea0c3b98" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Database_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="e19d3e68-6d3f-4e79-94b7-a768b13ec74e" >
+				<munit:payload value='{&#10;"productName": "perk",&#10;"productVendor": "RelianceMarket",&#10;"productDesc": "Chocolate",&#10;"quantity": 50,&#10;"buyPrice": 45.00&#10;}&#10;' mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to PostFlow" doc:id="bb13127c-7bc0-4452-a87b-ea24900414f3" name="PostFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="ca322822-ee9f-4835-a57a-45502f613cd6" actual="#[payload.'message']" expected='#["Product Details added"]' message='#["Error, check the post method"]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-PatchFlowTest" doc:id="ab206715-ddcf-4c0d-b059-e9d4bcf1aac3" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="236fbd1d-0628-4008-99c9-b179828b8781" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Update product details in DB" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="aa9c1da9-382a-486e-b2cb-3077e64ea066" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Database_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="80337f5e-3967-44c8-b414-f228d92f848a" >
+				<munit:payload value='{&#10;	"quantity": 15,&#10;	"buyPrice": 500&#10;}' mediaType="application/json" />
+				<munit:attributes value='#[{ uriParams: { ID: "P101" } }]' />
+				<munit:variables >
+					<munit:variable key="ID" value='"P101"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to PatchFlow" doc:id="de765b59-d3bd-4e27-812a-6fdcc384ff56" name="PatchFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="40cf7612-0149-473b-a1c5-3222864dfd61" expression="#[payload]" is="#[MunitTools::notNullValue()]" message='"Error"'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-PatchFlowTest1" doc:id="bc829f1d-e1ff-4f16-94ae-05774ef17e44" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="1b670f01-bd35-4d77-bb4e-6eb457cfcf2a" />
+			<flow-ref doc:name="Flow-ref to PatchFlow" doc:id="7ac08267-4b04-4565-963a-a7ed546f7d11" name="PatchFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="ecc1f355-25b1-41db-9159-45813d9e2331" actual="#[payload]" expected='#["Error, Check the Patch flow"]' message='"Check payload of patch default"'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-PutFlowTest1" doc:id="7b5a7fe8-bd5b-47b5-bfb8-6dca98fe5e13" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="9a3e91b8-d964-40a3-8bbe-32a941832cbf" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Insert" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="a5411221-0490-4d07-954f-619de2a22d6e" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Database_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="567dc649-ee68-4f57-881b-081d087774ed" />
+			<flow-ref doc:name="Flow-ref to PutFlow" doc:id="31e3c32e-bc6f-4ae3-9012-27c6231fea0b" name="PutFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="a4e11f57-4f55-4c2f-bd72-a2dacb83b681" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-getbyIDFlowTest1" doc:id="794e40cc-13a6-4cbb-8e26-340fb52c71a8" description="Test">
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="adc9356d-4548-49bd-92e1-23ea4147e3f3">
+				<munit:attributes value='#[{ uriParams: { ID: "P101" } }]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to getbyIDFlow" doc:id="387368a3-7b56-4db8-80f8-e7d90998369a" name="getbyIDFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="8b55878f-9fa9-401a-8cb3-56c19320d75f" expression="#[payload]" is="#[MunitTools::notNullValue()]" message='"Error, check the get by id (when) "'/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	
+	 <http:listener-config name="product-service-api-httpListenerConfig">
+        <http:listener-connection host="${http.host}" port="${http.port}" />
+    </http:listener-config>
+    
+    <db:config name="Database_Config" doc:name="Database Config" doc:id="37613acc-48f5-4d8f-9df8-c1fa7d3a1712" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
+	</db:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="3f8e920b-fdf5-47b9-a1a7-bde40a2aa667" file="Product-DEV.yaml" />
+	<configuration doc:name="Configuration" doc:id="a873ade5-e720-42fd-863a-0a5160f66ad6" defaultErrorHandler-ref="GlobalError_Handler" />
+	<error-handler name="GlobalError_Handler" doc:id="7b050ced-2bb9-4146-899d-aa8b7d9b0a41" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="742969fd-f9c1-468a-9075-af8cd1f1e21c" type="DB1:BAD_SQL_SYNTAX">
+			<set-payload value='"Error in sql syntax in get by id"' doc:name="Set Payload" doc:id="ce0c5ce4-d2fe-4b3c-b6b4-82d02a527a9c" />
+			<set-variable value="500" doc:name="httpStatus" doc:id="970d95bb-a115-4d22-a538-d494f07e4913" variableName="httpStatus"/>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7e464105-6283-4d11-9ae4-d756e4d7d95d" type="ANY">
+			<set-payload value='#[error.description]' doc:name="Set Payload" doc:id="d89689b6-e1f6-4364-bbb3-564bdef480ef" />
+			<set-variable value="500" doc:name="httpStatus" doc:id="660d523c-b8d8-48c1-9d2c-9f2a1774e429" variableName="httpStatus"/>
+		</on-error-continue>
+	</error-handler>
+	
+	
+		
+	
+	
+</mule>

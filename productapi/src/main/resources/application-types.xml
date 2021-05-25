@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="getexample" format="json">
+      <types:shape format="weave" example="examples/product metadata1-1.json"><![CDATA[%dw 2.0
+
+type getexample = Array<{|  productCode: String,   productName: String,   productVendor: String,   productDesc: String,   quantity: Number {"typeId": "int"},   buyPrice: Number {"typeId": "double"}|}> {"example": "[{\\\"productCode\\\":\\\"P101\\\",\\\"productName\\\":\\\"Sprite\\\",\\\"productVendor\\\":\\\"RelianceFresh\\\",\\\"productDesc\\\":\\\"Soft Drinks\\\",\\\"quantity\\\":35,\\\"buyPrice\\\":50.00},{\\\"productCode\\\":\\\"P102\\\",\\\"productName\\\":\\\"Diet\\\",\\\"productVendor\\\":\\\"RelianceFresh\\\",\\\"productDesc\\\":\\\"Soft Drinks\\\",\\\"quantity\\\":25,\\\"buyPrice\\\":55.00}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="getbyIdexample" format="json">
+      <types:shape format="weave" example="examples/product metadata 2-1.json"><![CDATA[%dw 2.0
+
+type getbyIdexample = {|
+  productCode: String, 
+  productName: String, 
+  productVendor: String, 
+  productDesc: String, 
+  quantity: Number {"typeId": "int"}, 
+  buyPrice: Number {"typeId": "double"}
+|} {"example": "{\\\"productCode\\\":\\\"P101\\\",\\\"productName\\\":\\\"Sprite\\\",\\\"productVendor\\\":\\\"RelianceFresh\\\",\\\"productDesc\\\":\\\"Soft Drinks\\\",\\\"quantity\\\":35,\\\"buyPrice\\\":50.00}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#1e3f8d48-fccf-4f51-ad91-5457a0aac473">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="getexample"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#a9d53d7b-63c5-49dc-b559-2073727db613">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="getbyIdexample"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>
